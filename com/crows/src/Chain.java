@@ -1,3 +1,5 @@
+package com.crows.src;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -30,13 +32,18 @@ public class Chain {
     int points;
     double perimeter;
 
+    // path
+	String path = "com/crows/images/";
+
     public Chain() throws IOException {
 
         // read input file
         System.out.print("Filename: ");
-        String filename = new String();
-        filename = Input.readString();
-        File shape = new File(filename);
+		StringBuilder filepath = new StringBuilder();
+		filepath.append(path);
+		filepath.append(Input.readString());
+		File shape = new File(filepath.toString());
+        System.out.println(shape.getAbsolutePath());
         BufferedImage image = ImageIO.read(shape);
 
         // setar propriedades da image para uso posterior
