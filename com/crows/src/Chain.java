@@ -4,6 +4,8 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @authorFelipe Custódio, Gabriel Scalici
@@ -19,7 +21,7 @@ public class Chain {
     int width;
 
     // bitmaps
-    int pixels[][]; // image with treshold 1 or 0
+    int pixels[][]; // image with threshold 1 or 0
     int visited[][]; // stores visited pixels
 
     // initial coordinates of the shape
@@ -34,6 +36,10 @@ public class Chain {
 
     // path
 	String path = "com/crows/images/";
+
+	// for the results
+	ChainVO chainVO;
+	CoordinatesVO coordinatesVO;
 
     public Chain() throws IOException {
 
@@ -56,7 +62,7 @@ public class Chain {
         points = 0;
         perimeter = 0;
 
-        // treshold image
+        // threshold image
         pixels = new int[h][w];
         visited = new int [h][w];
         for (int i = 0; i < h; i++) {
@@ -156,6 +162,19 @@ public class Chain {
         }
     }
 
+    public boolean isHangingConnection(int i, int j) {
+
+        for (int row = i - 1; row <= i + 1; row++) {
+            for (int column = j - 1; column <= j + 1; column++) {
+                if (row == i && column == j) continue;
+                if (pixels[row][column] == 0) continue;
+                if (visited[row][column] == 0) return false;
+            }
+        }
+
+        return true;
+    }
+
     public boolean borderPixel(int i, int j) {
 
         // only check black pixels
@@ -197,105 +216,117 @@ public class Chain {
     	return false;
     }
 
-    public int[] borderNeighbors(int i, int j) {
+    public ChainVO borderNeighbors(int i, int j, ChainVO chains) {
     	
-    	int index[] = new int[2];
     	boolean flag = false;
 
     	// check around pixel for unvisited border pixels
         // calculates chain codes distance
 
+        if (isHangingConnection(i, j)) {
+            chains.setReturning(true);
+        }
+
     	// check east
-    	if (borderPixel(i, j+1) && !flag && !flag && visited[i][j+1] == 0) {
+    	if (borderPixel(i, j+1) && !flag && (visited[i][j+1] == 0 || chains.isReturning())) {
     		j = j + 1;
     		System.out.print("0 ");
+    		chains.addChain(0);
     		perimeter += 1;
     		flag = true;
-    		index[0] = i;
-    		index[1] = j;
-    		return index;
+    		chains.setI(i);
+    		chains.setJ(j);
+    		return chains;
     	}
     	// check southeast
-    	if (borderPixel(i+1, j+1) && !flag && visited[i+1][j+1] == 0) {
+    	if (borderPixel(i+1, j+1) && !flag && (visited[i+1][j+1] == 0 || chains.isReturning())) {
     		i = i + 1;
     		j = j + 1;
     		System.out.print("1 ");
+			chains.addChain(1);
     		perimeter += Math.sqrt(2);
     		flag = true;
-    		index[0] = i;
-    		index[1] = j;
-    		return index;
+			chains.setI(i);
+			chains.setJ(j);
+			return chains;
     	}
     	// check south
-    	if (borderPixel(i+1, j) && !flag && visited[i+1][j] == 0) {
+    	if (borderPixel(i+1, j) && !flag && (visited[i+1][j] == 0 || chains.isReturning())) {
     		i = i + 1;
     		System.out.print("2 ");
+			chains.addChain(2);
     		perimeter += 1;
     		flag = true;
-    		index[0] = i;
-    		index[1] = j;
-    		return index;
+			chains.setI(i);
+			chains.setJ(j);
+			return chains;
     	}
     	// check southwest
-    	if (borderPixel(i+1, j-1) && !flag && visited[i+1][j-1] == 0) {
+    	if (borderPixel(i+1, j-1) && !flag && (visited[i+1][j-1] == 0 || chains.isReturning())) {
     		i = i + 1;
     		j = j - 1;
     		System.out.print("3 ");
+			chains.addChain(3);
     		perimeter += Math.sqrt(2);
     		flag = true;
-    		index[0] = i;
-    		index[1] = j;
-    		return index;
+			chains.setI(i);
+			chains.setJ(j);
+			return chains;
     	}
     	// check west
-    	if (borderPixel(i, j-1) && !flag && visited[i][j-1] == 0) {
+    	if (borderPixel(i, j-1) && !flag && (visited[i][j-1] == 0 || chains.isReturning())) {
     		j = j - 1;
     		System.out.print("4 ");
+			chains.addChain(4);
     		perimeter += 1;
     		flag = true;
-    		index[0] = i;
-    		index[1] = j;
-    		return index;
+			chains.setI(i);
+			chains.setJ(j);
+			return chains;
     	}
     	// check northwest
-    	if (borderPixel(i-1, j-1) && !flag && visited[i-1][j-1] == 0) {
+    	if (borderPixel(i-1, j-1) && !flag && (visited[i-1][j-1] == 0 || chains.isReturning())) {
     		i = i - 1;
     		j = j - 1;
     		System.out.print("5 ");
+			chains.addChain(5);
     		perimeter += Math.sqrt(2);
     		flag = true;
-    		index[0] = i;
-    		index[1] = j;
-    		return index;
+			chains.setI(i);
+			chains.setJ(j);
+			return chains;
     	}
     	// check north
-    	if (borderPixel(i-1, j) && !flag && visited[i-1][j] == 0) {
+    	if (borderPixel(i-1, j) && !flag && (visited[i-1][j] == 0 || chains.isReturning())) {
     		i = i - 1;
     		System.out.print("6 ");
+			chains.addChain(6);
     		perimeter += 1;
     		flag = true;
-    		index[0] = i;
-    		index[1] = j;
-    		return index;
+			chains.setI(i);
+			chains.setJ(j);
+			return chains;
     	}
     	// check northeast
-    	if (borderPixel(i-1, j+1) && !flag && visited[i-1][j+1] == 0) {
+    	if (borderPixel(i-1, j+1) && !flag && (visited[i-1][j+1] == 0 || chains.isReturning())) { // 여기 수정한 부분
     		i = i - 1;
     		j = j + 1;
     		System.out.print("7 ");
+			chains.addChain(7);
     		perimeter += Math.sqrt(2);
     		flag = true;
-    		index[0] = i;
-    		index[1] = j;
-    		return index;
+			chains.setI(i);
+			chains.setJ(j);
+			return chains;
     	}
+
         // no neighbor border pixels 
-    	index[0] = i;
-    	index[1] = j;
-    	return index;
+		chains.setI(i);
+		chains.setJ(j);
+		return chains;
     }
 
-    public void chainCodes(int i, int j) {
+    public void chainCodes(int[] begin, int i, int j, ChainVO chains) {
 
     	/*
     	i e j = index of current pixel
@@ -303,46 +334,139 @@ public class Chain {
     	*/
 
     	// coordinates of current pixel
-    	int[] index = new int[2];
+		int[] index = new int[2];
+		index[0] = chains.getI();
+		index[1] = chains.getJ();
 
-    	// check for border pixels around 
-    	index = borderNeighbors(i, j);
+    	// check for border pixels around
+		chains = borderNeighbors(i, j, chains);
 
     	// set pixel as visited
-    	visited[i][j] = 1;
+    	visited[index[0]][index[1]] = 1;
 
-    	// if next border pixel is visited, we're back to the first pixel 
-    	if (visited[index[0]][index[1]] == 0) {
-    		chainCodes(index[0], index[1]);
-    	} else {
-    		System.out.println();
-    	}
+        if (chains.getI() == begin[0] && chains.getJ() == begin[1]) {
+            System.out.println();
+            return;
+        }
+
+        if (visited[chains.getI()][chains.getJ()] == 0) {
+            chainCodes(begin, chains.getI(), chains.getJ(), chains);
+        } else if (chains.isReturning()) {
+            chains.setReturning(false);
+            chainCodes(begin, chains.getI(), chains.getJ(), chains);
+        } else {
+            System.out.println();
+        }
     }
 
-   public static void main(String[] args) throws IOException {
+    public Chain calculateChains(Chain c) {
+		// get key coordinates
+		c.firstPixel();
+		c.lastPixel();
 
-        Chain c = new Chain();
+        System.out.println("begin_x: " + c.begin[0]);
+        System.out.println("begin_y: " + c.begin[1]);
 
-        // get key coordinates
-        c.firstPixel();
-        c.lastPixel();
+		// calculate shape properties
+		c.setHeight();
+		c.setWidth();
+		System.out.println("Shape width: " + c.width);
+		System.out.println("Shape height: " + c.height);
 
-        // calculate shape properties
-        c.setHeight();
-        c.setWidth();
-        System.out.println("Shape width: " + c.width);
-        System.out.println("Shape height: " + c.height);
-        
-        // generate chain codes
-        // get coordinates of first border pixel after initial
-    	int[] index = new int[2];
-        System.out.print("Chain Codes: ");
-    	index = c.borderNeighbors(c.begin[0], c.begin[1]);
-        c.chainCodes(index[0], index[1]);       
+		// setting chain variable
+		c.chainVO = new ChainVO();
 
-        // get perimeter size
-        c.border();
-        System.out.println("Border pixels: " + c.points + " pixels");
-        System.out.println("Shape perimeter: " + c.perimeter);
-    }
+		// generate chain codes
+		// get coordinates of first border pixel after initial
+		System.out.print("Chain Codes: ");
+		c.chainVO = c.borderNeighbors(c.begin[0], c.begin[1], c.chainVO);
+		c.chainCodes(c.begin, c.chainVO.getI(), c.chainVO.getJ(), c.chainVO);
+
+		// get perimeter size
+		c.border();
+		System.out.println("Border pixels: " + c.points + " pixels");
+		System.out.println("Shape perimeter: " + c.perimeter);
+
+		return c;
+	}
+
+	public CoordinatesVO calculateCoordinate(CoordinatesVO coordinatesVO, ChainVO chains) {
+    	int x = coordinatesVO.getX();
+    	int y = coordinatesVO.getY();
+
+		for (int i = 0; i < chains.getChains().size(); i++) {
+			switch (chains.getChains().get(i)) {
+				case 0:
+					x++;
+					break;
+				case 1:
+					x++;
+					y--;
+					break;
+				case 2:
+					y--;
+					break;
+				case 3:
+					x--;
+					y--;
+					break;
+				case 4:
+					x--;
+					break;
+				case 5:
+					x--;
+					y++;
+					break;
+				case 6:
+					y++;
+					break;
+				case 7:
+					x++;
+					y++;
+					break;
+				default:
+			}
+
+			if (x < 0) {
+				coordinatesVO.setX(coordinatesVO.getX() + 50);
+				return calculateCoordinate(coordinatesVO, chains);
+			}
+
+			if (y < 0)
+			{
+				coordinatesVO.setY(coordinatesVO.getY() + 50);
+				return calculateCoordinate(coordinatesVO, chains);
+			}
+
+			coordinatesVO.addX(x);
+			coordinatesVO.addY(y);
+		}
+
+		return coordinatesVO;
+	}
+
+	public void printCoordinates(CoordinatesVO coordinatesVO) {
+
+		for (int i = 0; i < coordinatesVO.getxList().size(); i++) {
+			System.out.print(coordinatesVO.getxList().get(i) + " ");
+		}
+		System.out.println();
+
+		for (int i = 0; i < coordinatesVO.getyList().size(); i++) {
+			System.out.print(coordinatesVO.getyList().get(i) + " ");
+		}
+		System.out.println();
+	}
+
+	public static void main(String[] args) throws IOException {
+
+		Chain c = new Chain();
+		c = c.calculateChains(c);
+
+		// calculate coordinates
+		c.coordinatesVO = new CoordinatesVO();
+		c.coordinatesVO = c.calculateCoordinate(c.coordinatesVO, c.chainVO);
+
+		c.printCoordinates(c.coordinatesVO);
+	}
 }
